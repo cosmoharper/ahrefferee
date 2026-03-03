@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RudderStack Keyword Positioning Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-card: #1a1d27;
+            --bg-card-hover: #222532;
+            --border: #2a2d3a;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --text-muted: #5f6368;
+            --accent-blue: #4285f4;
+            --accent-green: #34a853;
+            --accent-yellow: #fbbc04;
+            --accent-red: #ea4335;
+            --accent-purple: #a142f4;
+            --accent-teal: #00bcd4;
+            --accent-orange: #ff7043;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .kpi-card .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .kpi-card .value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .kpi-card .sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-card h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .chart-card .chart-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .chart-container.bar-main { height: 480px; }
+        .chart-container.scatter { height: 420px; }
+        .chart-container.trend { height: 380px; }
+        .chart-container.donut { height: 320px; }
+        .chart-container.horizontal { height: 400px; }
+        .chart-container.bubble { height: 440px; }
+
+        .legend-custom {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-card-hover);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 16px;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .data-table tr:hover td {
+            background: rgba(66, 133, 244, 0.05);
+        }
+
+        .data-table .keyword-cell {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-green { background: rgba(52, 168, 83, 0.15); color: var(--accent-green); }
+        .badge-yellow { background: rgba(251, 188, 4, 0.15); color: var(--accent-yellow); }
+        .badge-red { background: rgba(234, 67, 53, 0.15); color: var(--accent-red); }
+        .badge-blue { background: rgba(66, 133, 244, 0.15); color: var(--accent-blue); }
+        .badge-purple { background: rgba(161, 66, 244, 0.15); color: var(--accent-purple); }
+
+        .insight-box {
+            background: rgba(66, 133, 244, 0.08);
+            border: 1px solid rgba(66, 133, 244, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .insight-box strong {
+            color: var(--accent-blue);
+        }
+
+        .section-divider {
+            margin: 40px 0 32px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-divider h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .section-divider p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        @media (max-width: 900px) {
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+
+    <div class="header">
+        <h1>RudderStack Keyword & Category Positioning</h1>
+        <p>Ahrefs keyword data mapped to positioning strategy &mdash; US monthly search volumes, difficulty, trends, and RS fit analysis</p>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="label">Total Tracked Keywords</div>
+            <div class="value">25</div>
+            <div class="sub">Across 7 category clusters</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Combined Monthly Volume</div>
+            <div class="value" style="color: var(--accent-blue);">39,350</div>
+            <div class="sub">US search volume (keywords with data)</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Highest Volume Keyword</div>
+            <div class="value" style="color: var(--accent-green);">CDP</div>
+            <div class="sub">13,000/mo &middot; KD 59</div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">Best Opportunity</div>
+            <div class="value" style="color: var(--accent-yellow); font-size: 22px;">Data Integration<br>Platform</div>
+            <div class="sub">2,800/mo &middot; KD 14</div>
+        </div>
+    </div>
+
+    <!-- Primary Chart: Volume by Keyword -->
+    <div class="chart-grid full">
+        <div class="chart-card">
+            <h2>Monthly Search Volume by Keyword</h2>
+            <div class="chart-subtitle">US monthly volume &mdash; color-coded by positioning category cluster</div>
+            <div class="chart-container bar-main">
+                <canvas id="volumeBar"></canvas>
+            </div>
+            <div class="legend-custom">
+                <div class="legend-item"><div class="legend-dot" style="background: #4285f4"></div>CDP / Customer Data Platform</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #fbbc04"></div>CDI / Customer Data Infrastructure</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #ea4335"></div>Data Streaming / Integration</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #34a853"></div>Reverse ETL / Event Stream</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #a142f4"></div>Context / AI Emerging</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #00bcd4"></div>Open Source / Alternative</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #ff7043"></div>Tag Manager / IaC</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scatter + Donut Row -->
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h2>Opportunity Quadrant: Volume vs. Difficulty</h2>
+            <div class="chart-subtitle">Bottom-right = high volume, low difficulty = best opportunity. Bubble size = traffic potential.</div>
+            <div class="chart-container scatter">
+                <canvas id="opportunityScatter"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h2>Volume Share by Category Cluster</h2>
+            <div class="chart-subtitle">How total search demand distributes across positioning categories</div>
+            <div class="chart-container donut">
+                <canvas id="categoryDonut"></canvas>
+            </div>
+            <div class="insight-box">
+                <strong>Key insight:</strong> CDP-related terms capture 62% of total tracked volume.
+                Data streaming/integration terms have volume but poor RS fit.
+                CDI — the most accurate RS descriptor — represents only 21% and is heavily polluted by non-customer-data acronyms.
+            </div>
+        </div>
+    </div>
+
+    <!-- Trend Section -->
+    <div class="section-divider">
+        <h2>Search Volume Trends (Mar 2024 &ndash; Feb 2026)</h2>
+        <p>24-month trend lines for keywords with historical data &mdash; identifying momentum and decline</p>
+    </div>
+
+    <div class="chart-grid full">
+        <div class="chart-card">
+            <h2>Core CDP Terms &mdash; Volume Trend</h2>
+            <div class="chart-subtitle">CDP, customer data platform, and customer data infrastructure over 24 months</div>
+            <div class="chart-container trend">
+                <canvas id="trendCDP"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h2>Rising Keywords &mdash; Volume Trend</h2>
+            <div class="chart-subtitle">Data streaming platform, streaming data platform, and context graph showing explosive growth</div>
+            <div class="chart-container trend">
+                <canvas id="trendRising"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h2>Declining / Flat Keywords &mdash; Volume Trend</h2>
+            <div class="chart-subtitle">Infrastructure as code, reverse ETL, and clickstream showing flat or declining patterns</div>
+            <div class="chart-container trend">
+                <canvas id="trendDeclining"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- RS Fit Analysis -->
+    <div class="section-divider">
+        <h2>Strategic Fit Analysis</h2>
+        <p>Mapping market demand against RudderStack's product fit and competitive positioning from SEO research</p>
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h2>Difficulty vs. CPC (Commercial Value)</h2>
+            <div class="chart-subtitle">Higher CPC = more commercial intent. High CPC + low difficulty = underserved commercial keywords.</div>
+            <div class="chart-container scatter">
+                <canvas id="difficultyCPC"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h2>RS Fit vs. Market Volume</h2>
+            <div class="chart-subtitle">From positioning analysis: where RS should focus based on product fit and market demand</div>
+            <div class="chart-container bubble">
+                <canvas id="fitBubble"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="chart-grid full">
+        <div class="chart-card">
+            <h2>Complete Keyword Data &mdash; Sorted by Volume</h2>
+            <div class="chart-subtitle">All 25 tracked keywords with volume, difficulty, CPC, cluster, and strategic recommendation</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Volume</th>
+                        <th>Difficulty</th>
+                        <th>CPC</th>
+                        <th>Global Vol.</th>
+                        <th>Cluster</th>
+                        <th>RS Fit</th>
+                        <th>Verdict</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ===================== DATA =====================
+const keywords = [
+    { kw: "cdp", vol: 13000, kd: 59, cpc: 2.5, globalVol: 139000, tp: 6700, cluster: "CDP", rsFit: "Medium", verdict: "Compete in composable corner", note: "Acronym ambiguity" },
+    { kw: "cdi", vol: 8100, kd: 54, cpc: 0.08, globalVol: 250000, tp: 1500, cluster: "CDI", rsFit: "Highest", verdict: "Descriptor, not category", note: "Overwhelmingly non-customer-data acronyms" },
+    { kw: "infrastructure as code", vol: 7400, kd: 62, cpc: 1.3, globalVol: 23000, tp: 2400, cluster: "Tag/IaC", rsFit: "Low", verdict: "Not RS category", note: "" },
+    { kw: "customer data platform", vol: 3300, kd: 48, cpc: 0.7, globalVol: 14000, tp: 3900, cluster: "CDP", rsFit: "High", verdict: "Primary category", note: "" },
+    { kw: "data integration platform", vol: 2800, kd: 14, cpc: 0.5, globalVol: 5000, tp: 1300, cluster: "Integration", rsFit: "Low", verdict: "Avoid - wrong use cases", note: "95% ETL/iPaaS intent" },
+    { kw: "clickstream", vol: 1200, kd: 15, cpc: 2.5, globalVol: 3600, tp: 600, cluster: "Event/RevETL", rsFit: "Medium", verdict: "Supporting content", note: "" },
+    { kw: "reverse etl", vol: 1100, kd: 9, cpc: 9.0, globalVol: 2900, tp: 700, cluster: "Event/RevETL", rsFit: "High", verdict: "Maintain - complements CDP", note: "" },
+    { kw: "data streaming platform", vol: 500, kd: 60, cpc: 1.4, globalVol: 800, tp: 150, cluster: "Streaming", rsFit: "Low", verdict: "Avoid - wrong audience", note: "Kafka/Confluent territory" },
+    { kw: "streaming data platform", vol: 500, kd: 59, cpc: 7.0, globalVol: 700, tp: 15000, cluster: "Streaming", rsFit: "Low", verdict: "Avoid - wrong audience", note: "" },
+    { kw: "context graph", vol: 450, kd: 0, cpc: 0, globalVol: 1000, tp: 0, cluster: "Context/AI", rsFit: "Low", verdict: "Watch - not today", note: "AI/agent buzzword, rising fast" },
+    { kw: "event stream", vol: 250, kd: 11, cpc: 1.9, globalVol: 1000, tp: 150, cluster: "Event/RevETL", rsFit: "Medium", verdict: "Grow - SDK entry point", note: "" },
+    { kw: "open source customer data platform", vol: 200, kd: 3, cpc: 8.0, globalVol: 450, tp: 100, cluster: "OpenSource", rsFit: "High", verdict: "Own - RS has cred", note: "" },
+    { kw: "customer data infrastructure", vol: 150, kd: 2, cpc: 9.0, globalVol: 400, tp: 50, cluster: "CDI", rsFit: "Highest", verdict: "Use as differentiator", note: "" },
+    { kw: "open source data platform", vol: 100, kd: 67, cpc: 4.0, globalVol: 300, tp: 100, cluster: "OpenSource", rsFit: "Medium", verdict: "Maintain", note: "" },
+    { kw: "open source segment alternative", vol: 50, kd: 0, cpc: 13.0, globalVol: 70, tp: 70, cluster: "OpenSource", rsFit: "High", verdict: "Own - high intent", note: "" },
+    { kw: "tag manager alternative", vol: 40, kd: null, cpc: null, globalVol: 90, tp: null, cluster: "Tag/IaC", rsFit: "Medium-High", verdict: "Strong wedge", note: "" },
+    { kw: "customer context", vol: 20, kd: 0, cpc: 0, globalVol: 50, tp: 10, cluster: "Context/AI", rsFit: "Low", verdict: "Skip", note: "" },
+    { kw: "customer data integration platform", vol: 10, kd: null, cpc: null, globalVol: 10, tp: null, cluster: "Integration", rsFit: "Low", verdict: "Skip", note: "" },
+];
+
+const noVolumeKeywords = [
+    "data infrastructure as code", "customer data streaming platform",
+    "customer profiles management", "open source customer data infrastructure",
+    "open source data infrastructure", "streaming customer data platform",
+    "streaming data integration platform"
+];
+
+// Cluster colors
+const clusterColors = {
+    "CDP": "#4285f4",
+    "CDI": "#fbbc04",
+    "Streaming": "#ea4335",
+    "Integration": "#ea4335",
+    "Event/RevETL": "#34a853",
+    "Context/AI": "#a142f4",
+    "OpenSource": "#00bcd4",
+    "Tag/IaC": "#ff7043"
+};
+
+// RS Fit colors
+const fitColors = {
+    "Highest": "#34a853",
+    "High": "#34a853",
+    "Medium-High": "#81c784",
+    "Medium": "#fbbc04",
+    "Low": "#ea4335"
+};
+
+// Trend data (24 months: Mar 2024 - Feb 2026)
+const trendLabels = [
+    "Mar'24","Apr'24","May'24","Jun'24","Jul'24","Aug'24",
+    "Sep'24","Oct'24","Nov'24","Dec'24","Jan'25","Feb'25",
+    "Mar'25","Apr'25","May'25","Jun'25","Jul'25","Aug'25",
+    "Sep'25","Oct'25","Nov'25","Dec'25","Jan'26","Feb'26"
+];
+
+const trends = {
+    "cdp": [13230,12772,13554,12991,12341,12622,12168,12566,12064,11199,12645,12815,12582,12982,12148,13526,14871,13429,13378,13818,13616,13117,13857,14153],
+    "customer data platform": [2753,3523,3108,3398,3309,3474,2923,3239,3273,3472,3510,3436,3310,3434,3036,3340,3262,3436,2892,3214,3252,3456,3497,3425],
+    "customer data infrastructure": [79,156,79,99,83,112,89,117,91,97,116,98,119,132,133,165,108,92,236,146,157,140,152,147],
+    "data streaming platform": [97,98,114,98,101,100,123,178,183,188,187,150,272,278,446,331,383,376,491,561,749,1154,609,577],
+    "streaming data platform": [112,112,133,103,111,104,130,199,199,196,206,180,299,294,503,366,544,420,546,565,746,659,685,686],
+    "context graph": [2,13,1,1,3,4,4,2,0,2,0,2,13,4,11,10,16,13,15,22,7,276,2389,2371],
+    "infrastructure as code": [8925,9464,9062,8153,7374,8433,8162,8686,8601,7528,8026,9737,9769,9616,9256,6383,6603,5552,8910,6409,5723,5192,5723,6661],
+    "reverse etl": [1600,1319,1582,1300,1302,1299,1063,1384,1059,936,1065,1027,1348,1076,1395,1073,1030,1128,1055,1094,966,875,1064,1037],
+    "clickstream": [1086,1290,1284,1270,1288,1514,1507,1532,1070,2481,1096,891,1391,1375,1210,912,1129,1078,1291,1342,1433,1344,1324,1511],
+    "data integration platform": [489,557,581,467,469,670,597,2007,848,1174,7655,2368,4359,2512,3123,2530,2850,1987,2313,4704,1436,1702,3387,2953],
+    "cdi": [8319,8830,8722,8788,8635,8790,8365,8060,7399,6970,7366,7924,8221,8431,8676,8728,8734,8712,8293,7992,7339,6915,7309,7865],
+    "event stream": [324,265,336,233,198,243,198,217,177,178,215,175,253,260,226,217,232,246,251,247,311,231,221,224]
+};
+
+// Chart defaults
+Chart.defaults.color = '#9aa0a6';
+Chart.defaults.borderColor = '#2a2d3a';
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+// ===================== CHART 1: Volume Bar =====================
+const sortedByVol = [...keywords].sort((a, b) => b.vol - a.vol);
+
+new Chart(document.getElementById('volumeBar'), {
+    type: 'bar',
+    data: {
+        labels: sortedByVol.map(k => k.kw),
+        datasets: [{
+            data: sortedByVol.map(k => k.vol),
+            backgroundColor: sortedByVol.map(k => clusterColors[k.cluster] + 'cc'),
+            borderColor: sortedByVol.map(k => clusterColors[k.cluster]),
+            borderWidth: 1,
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    title: (items) => items[0].label,
+                    label: (item) => {
+                        const kw = sortedByVol[item.dataIndex];
+                        return [
+                            `Volume: ${kw.vol.toLocaleString()}/mo`,
+                            `Difficulty: ${kw.kd ?? 'N/A'}`,
+                            `Cluster: ${kw.cluster}`,
+                            kw.note ? `Note: ${kw.note}` : ''
+                        ].filter(Boolean);
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { maxRotation: 45, minRotation: 45, font: { size: 11 } },
+                grid: { display: false }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: v => v >= 1000 ? (v/1000) + 'K' : v,
+                    font: { size: 11 }
+                },
+                title: { display: true, text: 'Monthly Search Volume (US)', font: { size: 12 } }
+            }
+        }
+    }
+});
+
+// ===================== CHART 2: Opportunity Scatter =====================
+const scatterData = keywords.filter(k => k.kd !== null && k.vol > 0).map(k => ({
+    x: k.kd,
+    y: k.vol,
+    r: Math.max(Math.sqrt(k.tp || k.vol) / 3, 5),
+    label: k.kw,
+    cluster: k.cluster
+}));
+
+new Chart(document.getElementById('opportunityScatter'), {
+    type: 'bubble',
+    data: {
+        datasets: [{
+            data: scatterData,
+            backgroundColor: scatterData.map(d => {
+                const kw = keywords.find(k => k.kw === d.label);
+                return clusterColors[kw.cluster] + '88';
+            }),
+            borderColor: scatterData.map(d => {
+                const kw = keywords.find(k => k.kw === d.label);
+                return clusterColors[kw.cluster];
+            }),
+            borderWidth: 1.5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const d = scatterData[ctx.dataIndex];
+                        return [
+                            d.label,
+                            `Volume: ${d.y.toLocaleString()}/mo`,
+                            `Difficulty: ${d.x}`
+                        ];
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                title: { display: true, text: 'Keyword Difficulty (lower = easier)', font: { size: 12 } },
+                min: -5, max: 75,
+                ticks: { font: { size: 11 } },
+                reverse: true
+            },
+            y: {
+                title: { display: true, text: 'Monthly Volume', font: { size: 12 } },
+                beginAtZero: true,
+                ticks: {
+                    callback: v => v >= 1000 ? (v/1000) + 'K' : v,
+                    font: { size: 11 }
+                }
+            }
+        }
+    }
+});
+
+// ===================== CHART 3: Category Donut =====================
+const clusterVolumes = {};
+keywords.forEach(k => {
+    const cl = k.cluster;
+    clusterVolumes[cl] = (clusterVolumes[cl] || 0) + k.vol;
+});
+const clusterEntries = Object.entries(clusterVolumes).sort((a, b) => b[1] - a[1]);
+
+new Chart(document.getElementById('categoryDonut'), {
+    type: 'doughnut',
+    data: {
+        labels: clusterEntries.map(e => e[0]),
+        datasets: [{
+            data: clusterEntries.map(e => e[1]),
+            backgroundColor: clusterEntries.map(e => clusterColors[e[0]] + 'cc'),
+            borderColor: clusterEntries.map(e => clusterColors[e[0]]),
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '55%',
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: { padding: 12, font: { size: 12 }, usePointStyle: true, pointStyleWidth: 12 }
+            },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const total = clusterEntries.reduce((s, e) => s + e[1], 0);
+                        const pct = ((ctx.raw / total) * 100).toFixed(1);
+                        return `${ctx.label}: ${ctx.raw.toLocaleString()}/mo (${pct}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// ===================== CHART 4: CDP Trend =====================
+function makeTrendChart(canvasId, datasets) {
+    new Chart(document.getElementById(canvasId), {
+        type: 'line',
+        data: {
+            labels: trendLabels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { padding: 16, font: { size: 12 }, usePointStyle: true, pointStyleWidth: 12 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.raw?.toLocaleString()}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { maxRotation: 45, font: { size: 10 }, maxTicksLimit: 12 },
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => v >= 1000 ? (v/1000) + 'K' : v,
+                        font: { size: 11 }
+                    }
+                }
+            },
+            elements: {
+                point: { radius: 2, hoverRadius: 5 },
+                line: { tension: 0.3 }
+            }
+        }
+    });
+}
+
+makeTrendChart('trendCDP', [
+    { label: 'cdp', data: trends['cdp'], borderColor: '#4285f4', backgroundColor: '#4285f422', fill: true },
+    { label: 'customer data platform', data: trends['customer data platform'], borderColor: '#34a853', backgroundColor: '#34a85322', fill: true },
+    { label: 'customer data infrastructure', data: trends['customer data infrastructure'], borderColor: '#fbbc04', backgroundColor: '#fbbc0422', fill: true, yAxisID: 'y1' }
+]);
+
+// Override for dual axis
+Chart.getChart('trendCDP').destroy();
+new Chart(document.getElementById('trendCDP'), {
+    type: 'line',
+    data: {
+        labels: trendLabels,
+        datasets: [
+            { label: 'cdp', data: trends['cdp'], borderColor: '#4285f4', backgroundColor: '#4285f418', fill: true, borderWidth: 2, yAxisID: 'y' },
+            { label: 'customer data platform', data: trends['customer data platform'], borderColor: '#34a853', backgroundColor: '#34a85318', fill: true, borderWidth: 2, yAxisID: 'y' },
+            { label: 'customer data infrastructure (right axis)', data: trends['customer data infrastructure'], borderColor: '#fbbc04', backgroundColor: '#fbbc0418', fill: true, borderWidth: 2, borderDash: [5,3], yAxisID: 'y1' }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { position: 'top', labels: { padding: 16, font: { size: 12 }, usePointStyle: true, pointStyleWidth: 12 } },
+            tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw?.toLocaleString()}` } }
+        },
+        scales: {
+            x: { ticks: { maxRotation: 45, font: { size: 10 }, maxTicksLimit: 12 }, grid: { display: false } },
+            y: { beginAtZero: true, position: 'left', ticks: { callback: v => v >= 1000 ? (v/1000)+'K' : v, font: { size: 11 } }, title: { display: true, text: 'cdp / customer data platform', font: { size: 11 } } },
+            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 11 } }, title: { display: true, text: 'customer data infrastructure', font: { size: 11 } } }
+        },
+        elements: { point: { radius: 2, hoverRadius: 5 }, line: { tension: 0.3 } }
+    }
+});
+
+// ===================== CHART 5: Rising Trends =====================
+makeTrendChart('trendRising', [
+    { label: 'data streaming platform', data: trends['data streaming platform'], borderColor: '#ea4335', backgroundColor: '#ea433518', fill: true, borderWidth: 2 },
+    { label: 'streaming data platform', data: trends['streaming data platform'], borderColor: '#ff7043', backgroundColor: '#ff704318', fill: true, borderWidth: 2 },
+    { label: 'context graph', data: trends['context graph'], borderColor: '#a142f4', backgroundColor: '#a142f418', fill: true, borderWidth: 2 },
+    { label: 'data integration platform', data: trends['data integration platform'], borderColor: '#fbbc04', backgroundColor: '#fbbc0418', fill: true, borderWidth: 2 }
+]);
+
+// ===================== CHART 6: Declining Trends =====================
+makeTrendChart('trendDeclining', [
+    { label: 'infrastructure as code', data: trends['infrastructure as code'], borderColor: '#ff7043', backgroundColor: '#ff704318', fill: true, borderWidth: 2 },
+    { label: 'reverse etl', data: trends['reverse etl'], borderColor: '#34a853', backgroundColor: '#34a85318', fill: true, borderWidth: 2 },
+    { label: 'clickstream', data: trends['clickstream'], borderColor: '#00bcd4', backgroundColor: '#00bcd418', fill: true, borderWidth: 2 },
+    { label: 'cdi', data: trends['cdi'], borderColor: '#fbbc04', backgroundColor: '#fbbc0418', fill: true, borderWidth: 2 }
+]);
+
+// ===================== CHART 7: Difficulty vs CPC =====================
+const cpcData = keywords.filter(k => k.cpc && k.kd !== null).map(k => ({
+    x: k.kd, y: k.cpc, label: k.kw, vol: k.vol
+}));
+
+new Chart(document.getElementById('difficultyCPC'), {
+    type: 'bubble',
+    data: {
+        datasets: [{
+            data: cpcData.map(d => ({ x: d.x, y: d.y, r: Math.max(Math.sqrt(d.vol) / 8, 4) })),
+            backgroundColor: cpcData.map(d => {
+                const kw = keywords.find(k => k.kw === d.label);
+                return clusterColors[kw.cluster] + '88';
+            }),
+            borderColor: cpcData.map(d => {
+                const kw = keywords.find(k => k.kw === d.label);
+                return clusterColors[kw.cluster];
+            }),
+            borderWidth: 1.5
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const d = cpcData[ctx.dataIndex];
+                        return [`${d.label}`, `CPC: $${d.y}`, `Difficulty: ${d.x}`, `Volume: ${d.vol.toLocaleString()}`];
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                title: { display: true, text: 'Keyword Difficulty', font: { size: 12 } },
+                min: -5, max: 75,
+                ticks: { font: { size: 11 } }
+            },
+            y: {
+                title: { display: true, text: 'CPC ($) — higher = more commercial intent', font: { size: 12 } },
+                beginAtZero: true,
+                ticks: { callback: v => '$' + v, font: { size: 11 } }
+            }
+        }
+    }
+});
+
+// ===================== CHART 8: RS Fit Bubble =====================
+const fitMap = { "Highest": 5, "High": 4, "Medium-High": 3, "Medium": 2, "Low": 1 };
+const fitBubbleData = keywords.filter(k => k.vol > 0).map(k => ({
+    x: fitMap[k.rsFit], y: k.vol, r: Math.max(Math.sqrt(k.tp || k.vol) / 5, 4),
+    label: k.kw, fit: k.rsFit, verdict: k.verdict
+}));
+
+new Chart(document.getElementById('fitBubble'), {
+    type: 'bubble',
+    data: {
+        datasets: [{
+            data: fitBubbleData,
+            backgroundColor: fitBubbleData.map(d => {
+                const kw = keywords.find(k => k.kw === d.label);
+                return fitColors[kw.rsFit] + '77';
+            }),
+            borderColor: fitBubbleData.map(d => {
+                const kw = keywords.find(k => k.kw === d.label);
+                return fitColors[kw.rsFit];
+            }),
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const d = fitBubbleData[ctx.dataIndex];
+                        return [`${d.label}`, `RS Fit: ${d.fit}`, `Volume: ${d.y.toLocaleString()}`, `Verdict: ${d.verdict}`];
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                title: { display: true, text: 'RS Product Fit (higher = better fit)', font: { size: 12 } },
+                min: 0.5, max: 5.5,
+                ticks: {
+                    callback: v => ['','Low','Medium','Med-High','High','Highest'][v] || '',
+                    stepSize: 1,
+                    font: { size: 11 }
+                }
+            },
+            y: {
+                title: { display: true, text: 'Monthly Search Volume', font: { size: 12 } },
+                type: 'logarithmic',
+                ticks: {
+                    callback: v => v >= 1000 ? (v/1000)+'K' : v,
+                    font: { size: 11 }
+                }
+            }
+        }
+    }
+});
+
+// ===================== DATA TABLE =====================
+const tbody = document.getElementById('dataTableBody');
+const sorted = [...keywords].sort((a, b) => b.vol - a.vol);
+
+sorted.forEach(k => {
+    const fitClass = k.rsFit === 'Highest' || k.rsFit === 'High' ? 'badge-green' :
+                     k.rsFit === 'Medium' || k.rsFit === 'Medium-High' ? 'badge-yellow' : 'badge-red';
+    const kdDisplay = k.kd !== null ? k.kd : '—';
+    const cpcDisplay = k.cpc !== null ? '$' + k.cpc : '—';
+
+    tbody.innerHTML += `
+        <tr>
+            <td class="keyword-cell">${k.kw}</td>
+            <td>${k.vol.toLocaleString()}</td>
+            <td>${kdDisplay}</td>
+            <td>${cpcDisplay}</td>
+            <td>${k.globalVol.toLocaleString()}</td>
+            <td><span class="badge badge-blue">${k.cluster}</span></td>
+            <td><span class="badge ${fitClass}">${k.rsFit}</span></td>
+            <td style="color: var(--text-secondary); font-size: 12px;">${k.verdict}</td>
+        </tr>
+    `;
+});
+
+// Add no-volume keywords
+noVolumeKeywords.forEach(kw => {
+    tbody.innerHTML += `
+        <tr>
+            <td class="keyword-cell" style="opacity: 0.5;">${kw}</td>
+            <td style="opacity: 0.5;">0</td>
+            <td>—</td><td>—</td><td>—</td>
+            <td><span class="badge badge-purple">No Data</span></td>
+            <td><span class="badge badge-red">N/A</span></td>
+            <td style="color: var(--text-muted); font-size: 12px;">No search demand</td>
+        </tr>
+    `;
+});
+</script>
+</body>
+</html>
