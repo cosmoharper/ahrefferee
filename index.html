@@ -3,30 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>RudderStack Keyword Positioning Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --bg-primary: #0f1117;
-            --bg-card: #1a1d27;
-            --bg-card-hover: #222532;
-            --border: #2a2d3a;
-            --text-primary: #e8eaed;
-            --text-secondary: #9aa0a6;
-            --text-muted: #5f6368;
-            --accent-blue: #4285f4;
-            --accent-green: #34a853;
-            --accent-yellow: #fbbc04;
-            --accent-red: #ea4335;
-            --accent-purple: #a142f4;
-            --accent-teal: #00bcd4;
-            --accent-orange: #ff7043;
+            --bg-primary: #f5f6fe;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f0f1f9;
+            --border: #e0e2eb;
+            --text-primary: #313845;
+            --text-secondary: #4c5463;
+            --text-muted: #7a8091;
+            --accent-blue: #1063e2;
+            --accent-green: #0e8345;
+            --accent-yellow: #c68a00;
+            --accent-red: #c10000;
+            --accent-purple: #6941c6;
+            --accent-teal: #0891b2;
+            --accent-orange: #c2410c;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -48,9 +52,7 @@
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--accent-blue);
         }
 
         .header p {
@@ -70,6 +72,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
         .kpi-card .label {
@@ -107,6 +110,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
         .chart-card.full-width {
@@ -164,7 +168,7 @@
             display: flex;
             gap: 4px;
             margin-bottom: 20px;
-            background: var(--bg-primary);
+            background: #eff0f6;
             border-radius: 8px;
             padding: 4px;
         }
@@ -216,7 +220,7 @@
         }
 
         .data-table tr:hover td {
-            background: rgba(66, 133, 244, 0.05);
+            background: rgba(16, 99, 226, 0.04);
         }
 
         .data-table .keyword-cell {
@@ -232,15 +236,15 @@
             font-weight: 600;
         }
 
-        .badge-green { background: rgba(52, 168, 83, 0.15); color: var(--accent-green); }
-        .badge-yellow { background: rgba(251, 188, 4, 0.15); color: var(--accent-yellow); }
-        .badge-red { background: rgba(234, 67, 53, 0.15); color: var(--accent-red); }
-        .badge-blue { background: rgba(66, 133, 244, 0.15); color: var(--accent-blue); }
-        .badge-purple { background: rgba(161, 66, 244, 0.15); color: var(--accent-purple); }
+        .badge-green { background: rgba(14, 131, 69, 0.1); color: var(--accent-green); }
+        .badge-yellow { background: rgba(198, 138, 0, 0.1); color: var(--accent-yellow); }
+        .badge-red { background: rgba(193, 0, 0, 0.1); color: var(--accent-red); }
+        .badge-blue { background: rgba(16, 99, 226, 0.1); color: var(--accent-blue); }
+        .badge-purple { background: rgba(105, 65, 198, 0.1); color: var(--accent-purple); }
 
         .insight-box {
-            background: rgba(66, 133, 244, 0.08);
-            border: 1px solid rgba(66, 133, 244, 0.2);
+            background: rgba(16, 99, 226, 0.05);
+            border: 1px solid rgba(16, 99, 226, 0.15);
             border-radius: 8px;
             padding: 16px;
             margin-top: 16px;
@@ -302,9 +306,9 @@
             <div class="sub">13,000/mo &middot; KD 59</div>
         </div>
         <div class="kpi-card">
-            <div class="label">Best Opportunity</div>
-            <div class="value" style="color: var(--accent-yellow); font-size: 22px;">Data Integration<br>Platform</div>
-            <div class="sub">2,800/mo &middot; KD 14</div>
+            <div class="label">Best Category Fit</div>
+            <div class="value" style="color: var(--accent-yellow); font-size: 20px;">Customer Data Platform</div>
+            <div class="sub">Warehouse-native differentiator &middot; Own the composable corner</div>
         </div>
     </div>
 
@@ -317,13 +321,13 @@
                 <canvas id="volumeBar"></canvas>
             </div>
             <div class="legend-custom">
-                <div class="legend-item"><div class="legend-dot" style="background: #4285f4"></div>CDP / Customer Data Platform</div>
-                <div class="legend-item"><div class="legend-dot" style="background: #fbbc04"></div>CDI / Customer Data Infrastructure</div>
-                <div class="legend-item"><div class="legend-dot" style="background: #ea4335"></div>Data Streaming / Integration</div>
-                <div class="legend-item"><div class="legend-dot" style="background: #34a853"></div>Reverse ETL / Event Stream</div>
-                <div class="legend-item"><div class="legend-dot" style="background: #a142f4"></div>Context / AI Emerging</div>
-                <div class="legend-item"><div class="legend-dot" style="background: #00bcd4"></div>Open Source / Alternative</div>
-                <div class="legend-item"><div class="legend-dot" style="background: #ff7043"></div>Tag Manager / IaC</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #1063e2"></div>CDP / Customer Data Platform</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #c68a00"></div>CDI / Customer Data Infrastructure</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #c10000"></div>Data Streaming / Integration</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #0e8345"></div>Reverse ETL / Event Stream</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #6941c6"></div>Context / AI Emerging</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #0891b2"></div>Open Source / Alternative</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #c2410c"></div>Tag Manager / IaC</div>
             </div>
         </div>
     </div>
@@ -462,25 +466,25 @@ const noVolumeKeywords = [
     "streaming data integration platform"
 ];
 
-// Cluster colors
+// Cluster colors — RudderStack palette
 const clusterColors = {
-    "CDP": "#4285f4",
-    "CDI": "#fbbc04",
-    "Streaming": "#ea4335",
-    "Integration": "#ea4335",
-    "Event/RevETL": "#34a853",
-    "Context/AI": "#a142f4",
-    "OpenSource": "#00bcd4",
-    "Tag/IaC": "#ff7043"
+    "CDP": "#1063e2",
+    "CDI": "#c68a00",
+    "Streaming": "#c10000",
+    "Integration": "#c10000",
+    "Event/RevETL": "#0e8345",
+    "Context/AI": "#6941c6",
+    "OpenSource": "#0891b2",
+    "Tag/IaC": "#c2410c"
 };
 
 // RS Fit colors
 const fitColors = {
-    "Highest": "#34a853",
-    "High": "#34a853",
-    "Medium-High": "#81c784",
-    "Medium": "#fbbc04",
-    "Low": "#ea4335"
+    "Highest": "#0e8345",
+    "High": "#0e8345",
+    "Medium-High": "#3bb06b",
+    "Medium": "#c68a00",
+    "Low": "#c10000"
 };
 
 // Trend data (24 months: Mar 2024 - Feb 2026)
@@ -506,10 +510,10 @@ const trends = {
     "event stream": [324,265,336,233,198,243,198,217,177,178,215,175,253,260,226,217,232,246,251,247,311,231,221,224]
 };
 
-// Chart defaults
-Chart.defaults.color = '#9aa0a6';
-Chart.defaults.borderColor = '#2a2d3a';
-Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+// Chart defaults — RudderStack light theme
+Chart.defaults.color = '#7a8091';
+Chart.defaults.borderColor = '#e0e2eb';
+Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
 // ===================== CHART 1: Volume Bar =====================
 const sortedByVol = [...keywords].sort((a, b) => b.vol - a.vol);
@@ -711,9 +715,9 @@ function makeTrendChart(canvasId, datasets) {
 }
 
 makeTrendChart('trendCDP', [
-    { label: 'cdp', data: trends['cdp'], borderColor: '#4285f4', backgroundColor: '#4285f422', fill: true },
-    { label: 'customer data platform', data: trends['customer data platform'], borderColor: '#34a853', backgroundColor: '#34a85322', fill: true },
-    { label: 'customer data infrastructure', data: trends['customer data infrastructure'], borderColor: '#fbbc04', backgroundColor: '#fbbc0422', fill: true, yAxisID: 'y1' }
+    { label: 'cdp', data: trends['cdp'], borderColor: '#1063e2', backgroundColor: '#1063e218', fill: true },
+    { label: 'customer data platform', data: trends['customer data platform'], borderColor: '#0e8345', backgroundColor: '#0e834518', fill: true },
+    { label: 'customer data infrastructure', data: trends['customer data infrastructure'], borderColor: '#c68a00', backgroundColor: '#c68a0018', fill: true, yAxisID: 'y1' }
 ]);
 
 // Override for dual axis
@@ -723,9 +727,9 @@ new Chart(document.getElementById('trendCDP'), {
     data: {
         labels: trendLabels,
         datasets: [
-            { label: 'cdp', data: trends['cdp'], borderColor: '#4285f4', backgroundColor: '#4285f418', fill: true, borderWidth: 2, yAxisID: 'y' },
-            { label: 'customer data platform', data: trends['customer data platform'], borderColor: '#34a853', backgroundColor: '#34a85318', fill: true, borderWidth: 2, yAxisID: 'y' },
-            { label: 'customer data infrastructure (right axis)', data: trends['customer data infrastructure'], borderColor: '#fbbc04', backgroundColor: '#fbbc0418', fill: true, borderWidth: 2, borderDash: [5,3], yAxisID: 'y1' }
+            { label: 'cdp', data: trends['cdp'], borderColor: '#1063e2', backgroundColor: '#1063e215', fill: true, borderWidth: 2, yAxisID: 'y' },
+            { label: 'customer data platform', data: trends['customer data platform'], borderColor: '#0e8345', backgroundColor: '#0e834515', fill: true, borderWidth: 2, yAxisID: 'y' },
+            { label: 'customer data infrastructure (right axis)', data: trends['customer data infrastructure'], borderColor: '#c68a00', backgroundColor: '#c68a0015', fill: true, borderWidth: 2, borderDash: [5,3], yAxisID: 'y1' }
         ]
     },
     options: {
@@ -738,7 +742,7 @@ new Chart(document.getElementById('trendCDP'), {
         scales: {
             x: { ticks: { maxRotation: 45, font: { size: 10 }, maxTicksLimit: 12 }, grid: { display: false } },
             y: { beginAtZero: true, position: 'left', ticks: { callback: v => v >= 1000 ? (v/1000)+'K' : v, font: { size: 11 } }, title: { display: true, text: 'cdp / customer data platform', font: { size: 11 } } },
-            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 11 } }, title: { display: true, text: 'customer data infrastructure', font: { size: 11 } } }
+            y1: { beginAtZero: true, max: 2000, position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { size: 11 } }, title: { display: true, text: 'customer data infrastructure', font: { size: 11 } } }
         },
         elements: { point: { radius: 2, hoverRadius: 5 }, line: { tension: 0.3 } }
     }
@@ -746,18 +750,18 @@ new Chart(document.getElementById('trendCDP'), {
 
 // ===================== CHART 5: Rising Trends =====================
 makeTrendChart('trendRising', [
-    { label: 'data streaming platform', data: trends['data streaming platform'], borderColor: '#ea4335', backgroundColor: '#ea433518', fill: true, borderWidth: 2 },
-    { label: 'streaming data platform', data: trends['streaming data platform'], borderColor: '#ff7043', backgroundColor: '#ff704318', fill: true, borderWidth: 2 },
-    { label: 'context graph', data: trends['context graph'], borderColor: '#a142f4', backgroundColor: '#a142f418', fill: true, borderWidth: 2 },
-    { label: 'data integration platform', data: trends['data integration platform'], borderColor: '#fbbc04', backgroundColor: '#fbbc0418', fill: true, borderWidth: 2 }
+    { label: 'data streaming platform', data: trends['data streaming platform'], borderColor: '#c10000', backgroundColor: '#c1000012', fill: true, borderWidth: 2 },
+    { label: 'streaming data platform', data: trends['streaming data platform'], borderColor: '#c2410c', backgroundColor: '#c2410c12', fill: true, borderWidth: 2 },
+    { label: 'context graph', data: trends['context graph'], borderColor: '#6941c6', backgroundColor: '#6941c612', fill: true, borderWidth: 2 },
+    { label: 'data integration platform', data: trends['data integration platform'], borderColor: '#c68a00', backgroundColor: '#c68a0012', fill: true, borderWidth: 2 }
 ]);
 
 // ===================== CHART 6: Declining Trends =====================
 makeTrendChart('trendDeclining', [
-    { label: 'infrastructure as code', data: trends['infrastructure as code'], borderColor: '#ff7043', backgroundColor: '#ff704318', fill: true, borderWidth: 2 },
-    { label: 'reverse etl', data: trends['reverse etl'], borderColor: '#34a853', backgroundColor: '#34a85318', fill: true, borderWidth: 2 },
-    { label: 'clickstream', data: trends['clickstream'], borderColor: '#00bcd4', backgroundColor: '#00bcd418', fill: true, borderWidth: 2 },
-    { label: 'cdi', data: trends['cdi'], borderColor: '#fbbc04', backgroundColor: '#fbbc0418', fill: true, borderWidth: 2 }
+    { label: 'infrastructure as code', data: trends['infrastructure as code'], borderColor: '#c2410c', backgroundColor: '#c2410c12', fill: true, borderWidth: 2 },
+    { label: 'reverse etl', data: trends['reverse etl'], borderColor: '#0e8345', backgroundColor: '#0e834512', fill: true, borderWidth: 2 },
+    { label: 'clickstream', data: trends['clickstream'], borderColor: '#0891b2', backgroundColor: '#0891b212', fill: true, borderWidth: 2 },
+    { label: 'cdi', data: trends['cdi'], borderColor: '#c68a00', backgroundColor: '#c68a0012', fill: true, borderWidth: 2 }
 ]);
 
 // ===================== CHART 7: Difficulty vs CPC =====================
